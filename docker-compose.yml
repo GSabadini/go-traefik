@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+  reverse-proxy:
+    # A imagem oficial do docker v2 Traefik
+    image: traefik:v2.2
+    # Habilita a interface do usuário da web e diz ao Traefik para ouvir o docker
+    command: --api.insecure=true --providers.docker
+    ports:
+      # A porta HTTP
+      - "80:80"
+      # A web UI (ativado por --api.insecure=true)
+      - "8080:8080"
+    volumes:
+      # Para que o Traefik possa ouvir os eventos do Docker
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  whoami:
+    # Um contêiner que expõe uma API para mostrar seu endereço IP
+    image: containous/whoami
+    labels:
+      - "traefik.http.routers.whoami.rule=Host(`whoami.docker.localhost`)"
