@@ -13,3 +13,12 @@ run-image:
 
 ci:
 	docker run --rm -it -v $(PWD):/app -w /app golangci/golangci-lint:v1.24.0 golangci-lint run
+
+up:
+	docker-compose up -d
+
+down:
+	docker-compose down --remove-orphans
+
+scale-api:
+	docker-compose up -d --scale go-info=${INSTANCIES}
