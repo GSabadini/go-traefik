@@ -1,27 +1,42 @@
-# RUN apk update && apk add --no-cache git
-FROM golang:1.14.0-alpine3.11 as builder
+##########
+# STEP 1 #
+##########
 
-RUN apk add --no-cache --virtual .build-deps \
-    bash \
-    gcc \
-    git \
-    musl-dev
+FROM golang:alpine AS builder
 
-RUN mkdir /app
-COPY . /app
-WORKDIR /app
+# Definir as variáveis ​​de ambiente necessárias para a imagem
+ENV GO111MODULE=on \
+    CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64
 
-RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o main .
-RUN adduser -S -D -H -h /app main
-USER main
+# Definir o diretório de trabalho /build
+WORKDIR /build
 
+# Copiar o código para o contêiner
+COPY . .
+
+# Buildar o aplicativo
+RUN go build -a --installsuffix cgo --ldflags="-s" -o main
+
+# Definir o diretório de trabalho /dist
+WORKDIR /dist
+
+# Copiar binário da compilação para a pasta principal (/dist)
+RUN cp /build/main .
+
+##########
+# STEP 2 #
+##########
+
+# Construir uma imagem pequena
 FROM scratch
 
-COPY --from=builder /app /app
+# Copiar o executável
+COPY --from=builder /dist/main .
 
-WORKDIR /app
+# Comando para executar o binário
+ENTRYPOINT ["./main"]
 
+# Porta na qual o serviço será exposto
 EXPOSE 8090
-
-CMD ["./main"]

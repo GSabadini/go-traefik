@@ -1,7 +1,7 @@
 version: '3.7'
 
 services:
-  reverse-proxy:
+  traefik:
     # A imagem oficial do docker v2 Traefik
     image: traefik:v2.2
     # Habilita a interface do usuário da web e diz ao Traefik para ouvir o docker
@@ -15,8 +15,8 @@ services:
       # Para que o Traefik possa ouvir os eventos do Docker
       - /var/run/docker.sock:/var/run/docker.sock
 
-  whoami:
-    # Um contêiner que expõe uma API para mostrar seu endereço IP
-    image: containous/whoami
+  go-info:
+    # Um contêiner que expõe dados de uma requisição HTTP
+    image: gsabadini/go-info
     labels:
-      - "traefik.http.routers.whoami.rule=Host(`whoami.docker.localhost`)"
+      - "traefik.http.routers.whoami.rule=Host(`info.docker.localhost`)"
